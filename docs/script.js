@@ -187,3 +187,7 @@ function testModel(model, inputData, normalizationData) {
     }
   );
 }
+
+// Make some predictions using the model and compare them to the
+// original data
+testModel(model, data, tensorData);
