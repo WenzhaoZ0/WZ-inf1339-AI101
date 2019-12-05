@@ -38,3 +38,18 @@ async function run() {
 }
 
 document.addEventListener('DOMContentLoaded', run);
+
+...
+{
+  "mpg":15,
+  "horsepower":165,
+},
+{
+  "mpg":18,
+  "horsepower":150,
+},
+{
+  "mpg":16,
+  "horsepower":150,
+},
+...
