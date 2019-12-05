@@ -25,7 +25,7 @@ async function run() {
   }));
 
   tfvis.render.scatterplot(
-    {name: 'Horsepower v MPG'},
+    {name: 'Horsepower vs MPG'},
     {values}, 
     {
       xLabel: 'Horsepower',
