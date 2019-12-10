@@ -33,28 +33,8 @@ async function run() {
       height: 300
     }
   );
-
-  // More code will be added below
-}
-
-document.addEventListener('DOMContentLoaded', run);
-
-...
-{
-  "mpg":15,
-  "horsepower":165,
-},
-{
-  "mpg":18,
-  "horsepower":150,
-},
-{
-  "mpg":16,
-  "horsepower":150,
-},
-...
-
-function createModel() {
+  
+  function createModel() {
   // Create a sequential model
   const model = tf.sequential(); 
   
@@ -65,12 +45,21 @@ function createModel() {
   model.add(tf.layers.dense({units: 1, useBias: true}));
 
   return model;
-}
-
-// Create the model
-const model = createModel();  
-tfvis.show.modelSummary({name: 'Model Summary'}, model);
-
+  }
+  
+  // Create the model
+  const model = createModel();  
+  tfvis.show.modelSummary({name: 'Model Summary'}, model);
+  
+  // Convert the data to a form we can use for training.
+  const tensorData = convertToTensor(data);
+  const {inputs, labels} = tensorData;
+    
+  // Train the model  
+  await trainModel(model, inputs, labels);
+  console.log('Done Training');
+}//End of Run
+  
 /**
  * Convert the input data to tensors that we can use for machine 
  * learning. We will also do the important best practices of _shuffling_
@@ -112,8 +101,8 @@ function convertToTensor(data) {
     }
   });  
 }
-
-async function trainModel(model, inputs, labels) {
+  
+  async function trainModel(model, inputs, labels) {
   // Prepare the model for training.  
   model.compile({
     optimizer: tf.train.adam(),
@@ -135,59 +124,8 @@ async function trainModel(model, inputs, labels) {
     )
   });
 }
+  
+document.addEventListener('DOMContentLoaded', run);
 
-// Convert the data to a form we can use for training.
-const tensorData = convertToTensor(data);
-const {inputs, labels} = tensorData;
-    
-// Train the model  
-await trainModel(model, inputs, labels);
-console.log('Done Training');
 
-function testModel(model, inputData, normalizationData) {
-  const {inputMax, inputMin, labelMin, labelMax} = normalizationData;  
-  
-  // Generate predictions for a uniform range of numbers between 0 and 1;
-  // We un-normalize the data by doing the inverse of the min-max scaling 
-  // that we did earlier.
-  const [xs, preds] = tf.tidy(() => {
-    
-    const xs = tf.linspace(0, 1, 100);      
-    const preds = model.predict(xs.reshape([100, 1]));      
-    
-    const unNormXs = xs
-      .mul(inputMax.sub(inputMin))
-      .add(inputMin);
-    
-    const unNormPreds = preds
-      .mul(labelMax.sub(labelMin))
-      .add(labelMin);
-    
-    // Un-normalize the data
-    return [unNormXs.dataSync(), unNormPreds.dataSync()];
-  });
-  
- 
-  const predictedPoints = Array.from(xs).map((val, i) => {
-    return {x: val, y: preds[i]}
-  });
-  
-  const originalPoints = inputData.map(d => ({
-    x: d.horsepower, y: d.mpg,
-  }));
-  
-  
-  tfvis.render.scatterplot(
-    {name: 'Model Predictions vs Original Data'}, 
-    {values: [originalPoints, predictedPoints], series: ['original', 'predicted']}, 
-    {
-      xLabel: 'Horsepower',
-      yLabel: 'MPG',
-      height: 300
-    }
-  );
-}
 
-// Make some predictions using the model and compare them to the
-// original data
-testModel(model, data, tensorData);
